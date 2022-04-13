@@ -24,8 +24,10 @@ NDArray::NDArray(std::vector<int> vector, int i, int j) {
         shape.second = j;
     }
     A = (int *) malloc((length) * sizeof(int));
-    for (int k = 0; k < vector.size(); ++k) {
-        A[k] = vector[k];
+    int k = 0;
+    for (std::vector<int>::iterator it = vector.begin(); it != vector.end(); ++it) {
+        A[k] = *it;
+        k++;
     }
 }
 
@@ -57,48 +59,40 @@ void NDArray::fill_rand() {
 }
 
 NDArray NDArray::operator+(NDArray other) {
-    if (shape == other.shape) {
-        NDArray sum (shape.first, shape.second);
-        for (int i = 0; i < length; ++i) {
-            sum.A[i] = A[i] + other.A[i];
-        }
-        return sum;
+    NDArray sum (shape.first, shape.second);
+    for (int i = 0; i < length; ++i) {
+        sum.A[i] = A[i] + other.A[i];
     }
+    return sum;
 }
 
 NDArray NDArray::operator-(NDArray other) {
-    if (shape == other.shape) {
-        NDArray sum (shape.first, shape.second);
-        for (int i = 0; i < length; ++i) {
-            sum.A[i] = A[i] - other.A[i];
-        }
-        return sum;
+    NDArray sum (shape.first, shape.second);
+    for (int i = 0; i < length; ++i) {
+        sum.A[i] = A[i] - other.A[i];
     }
+    return sum;
 }
 
 NDArray NDArray::operator*(NDArray other) {
-    if (shape == other.shape) {
-        NDArray sum (shape.first, shape.second);
-        for (int i = 0; i < length; ++i) {
-            sum.A[i] = A[i] * other.A[i];
-        }
-        return sum;
+    NDArray sum (shape.first, shape.second);
+    for (int i = 0; i < length; ++i) {
+        sum.A[i] = A[i] * other.A[i];
     }
+    return sum;
 }
 
 NDArray NDArray::operator/(NDArray other) {
-    if (shape == other.shape) {
-        NDArray sum (shape.first, shape.second);
-        for (int i = 0; i < length; ++i) {
-            if (other.A[i] != 0) {
-                sum.A[i] = A[i] / other.A[i];
-            }
-            else {
-                sum.A[i] = 0;
-            }
+    NDArray sum (shape.first, shape.second);
+    for (int i = 0; i < length; ++i) {
+        if (other.A[i] != 0) {
+            sum.A[i] = A[i] / other.A[i];
         }
-        return sum;
+        else {
+            sum.A[i] = 0;
+        }
     }
+    return sum;
 }
 
 int NDArray::operator()(int i, int j) {
@@ -133,8 +127,6 @@ NDArray NDArray::transpose() {
 
 NDArray NDArray::matmul(NDArray other) {
     NDArray array = *this;
-    if (shape.first != 1 && other.shape.first != 1 &&
-            shape.second == other.shape.first) {
         std::vector<int> vec;
         for (int i = 0; i < shape.first; ++i) {
             for (int j = 0; j < other.transpose().shape.first; ++j) {
@@ -146,11 +138,11 @@ NDArray NDArray::matmul(NDArray other) {
             }
         }
         return NDArray(vec, shape.first, other.shape.second);
-    }
 }
 
 NDArray NDArray::sum(int index) {
     std::vector<int> vec;
+    NDArray ndArray(0,0);
     if (index == 0) {
         for (int i = 0; i < shape.second; ++i) {
             int sum = 0;
@@ -159,7 +151,8 @@ NDArray NDArray::sum(int index) {
             }
             vec.push_back(sum);
         }
-        return NDArray(vec, shape.second);
+        ndArray.setShape(shape.second, 1);
+        ndArray.setA(vec);
     }
     else if (index == 1) {
         for (int i = 0; i < shape.first; ++i) {
@@ -169,12 +162,15 @@ NDArray NDArray::sum(int index) {
             }
             vec.push_back(sum);
         }
-        return NDArray (vec, shape.first);
+        ndArray.setShape(shape.first, 1);
+        ndArray.setA(vec);
     }
+    return ndArray;
 }
 
 NDArray NDArray::min(int index) {
     std::vector<int> vec;
+    NDArray ndArray(0,0);
     if (index == 0) {
         for (int i = 0; i < shape.second; ++i) {
             int min = A[flatten_indexes(0, i)];
@@ -185,7 +181,8 @@ NDArray NDArray::min(int index) {
             }
             vec.push_back(min);
         }
-        return NDArray(vec, shape.second);
+        ndArray.setShape(shape.second, 1);
+        ndArray.setA(vec);
     }
     else if (index == 1) {
         for (int i = 0; i < shape.first; ++i) {
@@ -196,12 +193,15 @@ NDArray NDArray::min(int index) {
             }
             vec.push_back(min);
         }
-        return NDArray (vec, shape.first);
+        ndArray.setShape(shape.first, 1);
+        ndArray.setA(vec);
     }
+    return ndArray;
 }
 
 NDArray NDArray::max(int index) {
     std::vector<int> vec;
+    NDArray ndArray(0,0);
     if (index == 0) {
         for (int i = 0; i < shape.second; ++i) {
             int max = A[flatten_indexes(0, i)];
@@ -212,7 +212,8 @@ NDArray NDArray::max(int index) {
             }
             vec.push_back(max);
         }
-        return NDArray(vec, shape.second);
+        ndArray.setShape(shape.second, 1);
+        ndArray.setA(vec);
     }
     else if (index == 1) {
         for (int i = 0; i < shape.first; ++i) {
@@ -223,8 +224,10 @@ NDArray NDArray::max(int index) {
             }
             vec.push_back(max);
         }
-        return NDArray (vec, shape.first);
+        ndArray.setShape(shape.first, 1);
+        ndArray.setA(vec);
     }
+    return ndArray;
 }
 
 int NDArray::flatten_indexes(int i, int j) {
@@ -245,4 +248,18 @@ int NDArray::getLength() {
 
 int NDArray::getValue(int index) {
     return A[index];
+}
+
+void NDArray::setShape(int f, int s) {
+    shape.first = f;
+    shape.second = s;
+}
+
+void NDArray::setA(std::vector<int> vector) {
+    A = (int *) malloc((length) * sizeof(int));
+    int k = 0;
+    for (std::vector<int>::iterator it = vector.begin(); it != vector.end(); ++it) {
+        A[k] = *it;
+        k++;
+    }
 }
