@@ -42,6 +42,9 @@ public:
     int getLength();
     int getValue(int index);
 
+    void setShape(int first, int second);
+    void setA(std::vector<int> vector);
+
 };
 
 
