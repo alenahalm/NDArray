@@ -59,6 +59,9 @@ void NDArray::fill_rand() {
 }
 
 NDArray NDArray::operator+(NDArray other) {
+    if (shape.first != other.shape.first || shape.second != other.shape.second){
+        throw std::invalid_argument("Both matrices must be the same shape.");
+    }
     NDArray sum (shape.first, shape.second);
     for (int i = 0; i < length; ++i) {
         sum.A[i] = A[i] + other.A[i];
@@ -67,6 +70,9 @@ NDArray NDArray::operator+(NDArray other) {
 }
 
 NDArray NDArray::operator-(NDArray other) {
+    if (shape.first != other.shape.first || shape.second != other.shape.second){
+        throw std::invalid_argument("Both matrices must be the same shape.");
+    }
     NDArray sum (shape.first, shape.second);
     for (int i = 0; i < length; ++i) {
         sum.A[i] = A[i] - other.A[i];
@@ -75,6 +81,9 @@ NDArray NDArray::operator-(NDArray other) {
 }
 
 NDArray NDArray::operator*(NDArray other) {
+    if (shape.first != other.shape.first || shape.second != other.shape.second){
+        throw std::invalid_argument("Both matrices must be the same shape.");
+    }
     NDArray sum (shape.first, shape.second);
     for (int i = 0; i < length; ++i) {
         sum.A[i] = A[i] * other.A[i];
@@ -83,6 +92,9 @@ NDArray NDArray::operator*(NDArray other) {
 }
 
 NDArray NDArray::operator/(NDArray other) {
+    if (shape.first != other.shape.first || shape.second != other.shape.second){
+        throw std::invalid_argument("Both matrices must be the same shape.");
+    }
     NDArray sum (shape.first, shape.second);
     for (int i = 0; i < length; ++i) {
         if (other.A[i] != 0) {
@@ -126,21 +138,27 @@ NDArray NDArray::transpose() {
 }
 
 NDArray NDArray::matmul(NDArray other) {
+    if (shape.second != other.shape.first) {
+        throw std::invalid_argument("Number of columns in the first matrix must be equal to the number of lines in the second.");
+    }
     NDArray array = *this;
-        std::vector<int> vec;
-        for (int i = 0; i < shape.first; ++i) {
-            for (int j = 0; j < other.transpose().shape.first; ++j) {
-                int sum = 0;
-                for (int k = 0; k < shape.second; ++k) {
-                    sum += (array(i)[k] * other.transpose()(j)[k]);
-                }
-                vec.push_back(sum);
+    std::vector<int> vec;
+    for (int i = 0; i < shape.first; ++i) {
+        for (int j = 0; j < other.transpose().shape.first; ++j) {
+            int sum = 0;
+            for (int k = 0; k < shape.second; ++k) {
+                sum += (array(i)[k] * other.transpose()(j)[k]);
             }
+            vec.push_back(sum);
         }
-        return NDArray(vec, shape.first, other.shape.second);
+    }
+    return NDArray(vec, shape.first, other.shape.second);
 }
 
 NDArray NDArray::sum(int index) {
+    if (!(index == 0 || index == 1)) {
+        throw std::invalid_argument("Axis is out of bound for array");
+    }
     std::vector<int> vec;
     NDArray ndArray(0,0);
     if (index == 0) {
@@ -169,6 +187,9 @@ NDArray NDArray::sum(int index) {
 }
 
 NDArray NDArray::min(int index) {
+    if (!(index == 0 || index == 1)) {
+        throw std::invalid_argument("Axis is out of bound for array");
+    }
     std::vector<int> vec;
     NDArray ndArray(0,0);
     if (index == 0) {
@@ -200,6 +221,9 @@ NDArray NDArray::min(int index) {
 }
 
 NDArray NDArray::max(int index) {
+    if (!(index == 0 || index == 1)) {
+        throw std::invalid_argument("Axis is out of bound for array");
+    }
     std::vector<int> vec;
     NDArray ndArray(0,0);
     if (index == 0) {
@@ -251,8 +275,15 @@ int NDArray::getValue(int index) {
 }
 
 void NDArray::setShape(int f, int s) {
-    shape.first = f;
-    shape.second = s;
+    length = f * s;
+    if (s == 1) {
+        shape.first = s;
+        shape.second = f;
+    }
+    else{
+        shape.first = f;
+        shape.second = s;
+    }
 }
 
 void NDArray::setA(std::vector<int> vector) {
