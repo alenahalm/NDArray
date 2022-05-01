@@ -3,13 +3,16 @@
 
 #include <iostream>
 #include <vector>
+#include <stdexcept>
 
 class NDArray {
+private:
     int *A;
     std::pair<int, int> shape;
     int length;
 
 public:
+
     NDArray (int i, int j=1);
     NDArray (std::vector<int> vector, int i, int j=1);
     void display();
